@@ -100,7 +100,7 @@ pub const Primitive = enum(u8) {
             0 => 8,
             1 => 16,
             2 => 32,
-            4 => 64,
+            3 => 64,
             else => unreachable,
         };
     }
@@ -129,12 +129,12 @@ pub const Primitive = enum(u8) {
 
     pub fn ZigScalarType(comptime self: Primitive) type {
         const bits = self.getBitSize();
-        switch (self.getKind()) {
-            .bool => return bool,
+        return switch (self.getKind()) {
+            .bool => bool,
             .signed => std.meta.Int(.signed, bits),
             .unsigned => std.meta.Int(.unsigned, bits),
             .float => std.meta.Float(bits),
-        }
+        };
     }
 
     pub fn ZigVectorType(comptime self: Primitive) type {

@@ -1,24 +1,31 @@
 const std = @import("std");
+const vm = @import("vm.zig");
+const bytecode = @import("bytecode.zig");
+
+const inst = bytecode.instruction;
+
+pub const std_options = struct {
+
+    pub const log_level = std.log.Level.info;
+
+};
+
+const code = 
+    inst.push(.i32, 1) ++
+    inst.push(.i32, 2) ++
+    inst.generic(.add, .i32);
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
-
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
-
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
-
-    try bw.flush(); // don't forget to flush!
+    var stack_buffer: [1024] u8 align(8) = undefined;
+    var context = vm.Context.init(&stack_buffer);
+    try context.execute(&code);
+    const result = context.stack.peek(i32).*;
+    std.log.info("result: {d}", .{result});
 }
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
-}
+// export fn execute(ptr: [*]u8, len: usize) void {
+//     const code = ptr[0..len];
+//     var stack_buffer: [1024] u8 align(8) = undefined;
+//     var context = vm.Context.init(&stack_buffer);
+//     context.execute(code) catch {};
+// }
