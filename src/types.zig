@@ -68,7 +68,7 @@ pub const Primitive = enum(u8) {
     vec3_f64 = createValue(.float, 64, 3),
     vec4_f64 = createValue(.float, 64, 4),
 
-    pub fn createValue(
+    fn createValue(
         comptime kind: Kind,
         comptime bits: u8,
         comptime dimensions: u8,
@@ -115,6 +115,10 @@ pub const Primitive = enum(u8) {
 
     pub fn getSize(self: Primitive) usize {
         return (self.getBitSize() >> 3) * self.getDimensions();
+    }
+
+    pub fn getAlignment(self: Primitive) u29 {
+        return self.getScalar().getBitSize() >> 3;
     }
 
     pub fn ZigType(comptime self: Primitive) type {
